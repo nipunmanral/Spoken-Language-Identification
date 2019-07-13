@@ -23,7 +23,7 @@ The full audio files are ∼ 10 minutes long which might be too long to train an
 The wav files have 16KHz sampling rate, single channel, and 16-bit Signed Integer PCM encoding.
 
 ## Notes about the code
-Thee code has been divided into 6 blocks. Kindly refer to the following notes to comment/uncomment the blocks as needed
+The code has been divided into 6 blocks. Kindly refer to the following notes to comment/uncomment the blocks as needed
 
 - The code in Block 1 is used to extract the mfcc features provided and write them into a dataset “mfcc_dataset.hdf5”. This part of the code can be commented out if the hdf5 file already exists.
 
