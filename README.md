@@ -16,7 +16,7 @@ mapping = dict{’english ’: 0, ’hindi ’: 1, ’mandarin’: 2}
 
 I have not uploaded the audio files here due to a size constraint. The `train_files.json` file is used to map the audio files to the language spoken in it.
 
-# Sample length
+## Sample length
 The full audio files are ∼ 10 minutes long which might be too long to train an RNN. Multiple 10 seconds samples are created from every utterance and the same label as the original utterance are assigned to them. The choice of sequence length can be changed to experiment with samples of different length.
 
 ## Audio Format
