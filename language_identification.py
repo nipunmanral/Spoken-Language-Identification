@@ -9,6 +9,9 @@ from sklearn.model_selection import train_test_split
 from keras.models import load_model
 
 
+skipBlock1 = False
+
+            
 def language_name(index):
     if index == 0:
         return "English"
@@ -23,66 +26,79 @@ def language_name(index):
 codePath = './train/'
 num_mfcc_features = 64
 
-english_mfcc = np.array([]).reshape(0, num_mfcc_features)
-for file in glob.glob(codePath + 'english/*.npy'):
-    current_data = np.load(file).T
-    english_mfcc = np.vstack((english_mfcc, current_data))
+# if set to true, will not do this process again
+if (not skipBlock1):
+    
+    # reads the directories ("codepath/en/name.wav" for example) and extracs MFCCs beside it
+    for dir in glob.glob(codePath + '*'):
+        print("Creating numpy arrays for " + dir)
+        for file in glob.glob(dir+'/*.wav'):
+            fs, data = wavfile.read(file)
 
-hindi_mfcc = np.array([]).reshape(0, num_mfcc_features)
-for file in glob.glob(codePath + 'hindi/*.npy'):
-    current_data = np.load(file).T
-    hindi_mfcc = np.vstack((hindi_mfcc, current_data))
+            arr = data[0:num_mfcc_features]
+            np.save(file+".npy", arr)
+            
+          
+    english_mfcc = np.array([]).reshape(0, num_mfcc_features)
+    for file in glob.glob(codePath + 'english/*.npy'):
+        current_data = np.load(file).T
+        english_mfcc = np.vstack((english_mfcc, current_data))
 
-mandarin_mfcc = np.array([]).reshape(0, num_mfcc_features)
-for file in glob.glob(codePath + 'mandarin/*.npy'):
-    current_data = np.load(file).T
-    mandarin_mfcc = np.vstack((mandarin_mfcc, current_data))
+    hindi_mfcc = np.array([]).reshape(0, num_mfcc_features)
+    for file in glob.glob(codePath + 'hindi/*.npy'):
+        current_data = np.load(file).T
+        hindi_mfcc = np.vstack((hindi_mfcc, current_data))
 
-# Sequence length is 10 seconds
-sequence_length = 1000
-list_english_mfcc = []
-num_english_sequence = int(np.floor(len(english_mfcc)/sequence_length))
-for i in range(num_english_sequence):
-    list_english_mfcc.append(english_mfcc[sequence_length*i:sequence_length*(i+1)])
-list_english_mfcc = np.array(list_english_mfcc)
-english_labels = np.full((num_english_sequence, 1000, 3), np.array([1, 0, 0]))
+    mandarin_mfcc = np.array([]).reshape(0, num_mfcc_features)
+    for file in glob.glob(codePath + 'mandarin/*.npy'):
+        current_data = np.load(file).T
+        mandarin_mfcc = np.vstack((mandarin_mfcc, current_data))
 
-list_hindi_mfcc = []
-num_hindi_sequence = int(np.floor(len(hindi_mfcc)/sequence_length))
-for i in range(num_hindi_sequence):
-    list_hindi_mfcc.append(hindi_mfcc[sequence_length*i:sequence_length*(i+1)])
-list_hindi_mfcc = np.array(list_hindi_mfcc)
-hindi_labels = np.full((num_hindi_sequence, 1000, 3), np.array([0, 1, 0]))
+    # Sequence length is 10 seconds
+    sequence_length = 1000
+    list_english_mfcc = []
+    num_english_sequence = int(np.floor(len(english_mfcc)/sequence_length))
+    for i in range(num_english_sequence):
+        list_english_mfcc.append(english_mfcc[sequence_length*i:sequence_length*(i+1)])
+    list_english_mfcc = np.array(list_english_mfcc)
+    english_labels = np.full((num_english_sequence, 1000, 3), np.array([1, 0, 0]))
 
-list_mandarin_mfcc = []
-num_mandarin_sequence = int(np.floor(len(mandarin_mfcc)/sequence_length))
-for i in range(num_mandarin_sequence):
-    list_mandarin_mfcc.append(mandarin_mfcc[sequence_length*i:sequence_length*(i+1)])
-list_mandarin_mfcc = np.array(list_mandarin_mfcc)
-mandarin_labels = np.full((num_mandarin_sequence, 1000, 3), np.array([0, 0, 1]))
+    list_hindi_mfcc = []
+    num_hindi_sequence = int(np.floor(len(hindi_mfcc)/sequence_length))
+    for i in range(num_hindi_sequence):
+        list_hindi_mfcc.append(hindi_mfcc[sequence_length*i:sequence_length*(i+1)])
+    list_hindi_mfcc = np.array(list_hindi_mfcc)
+    hindi_labels = np.full((num_hindi_sequence, 1000, 3), np.array([0, 1, 0]))
 
-del english_mfcc
-del hindi_mfcc
-del mandarin_mfcc
+    list_mandarin_mfcc = []
+    num_mandarin_sequence = int(np.floor(len(mandarin_mfcc)/sequence_length))
+    for i in range(num_mandarin_sequence):
+        list_mandarin_mfcc.append(mandarin_mfcc[sequence_length*i:sequence_length*(i+1)])
+    list_mandarin_mfcc = np.array(list_mandarin_mfcc)
+    mandarin_labels = np.full((num_mandarin_sequence, 1000, 3), np.array([0, 0, 1]))
 
-total_sequence_length = num_english_sequence + num_hindi_sequence + num_mandarin_sequence
-Y_train = np.vstack((english_labels, hindi_labels))
-Y_train = np.vstack((Y_train, mandarin_labels))
+    del english_mfcc
+    del hindi_mfcc
+    del mandarin_mfcc
 
-X_train = np.vstack((list_english_mfcc, list_hindi_mfcc))
-X_train = np.vstack((X_train, list_mandarin_mfcc))
+    total_sequence_length = num_english_sequence + num_hindi_sequence + num_mandarin_sequence
+    Y_train = np.vstack((english_labels, hindi_labels))
+    Y_train = np.vstack((Y_train, mandarin_labels))
 
-del list_english_mfcc
-del list_hindi_mfcc
-del list_mandarin_mfcc
+    X_train = np.vstack((list_english_mfcc, list_hindi_mfcc))
+    X_train = np.vstack((X_train, list_mandarin_mfcc))
 
-X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.2)
+    del list_english_mfcc
+    del list_hindi_mfcc
+    del list_mandarin_mfcc
 
-with h5py.File("mfcc_dataset.hdf5", 'w') as hf:
-    hf.create_dataset('X_train', data=X_train)
-    hf.create_dataset('Y_train', data=Y_train)
-    hf.create_dataset('X_val', data=X_val)
-    hf.create_dataset('Y_val', data=Y_val)
+    X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.2)
+
+    with h5py.File("mfcc_dataset.hdf5", 'w') as hf:
+        hf.create_dataset('X_train', data=X_train)
+        hf.create_dataset('Y_train', data=Y_train)
+        hf.create_dataset('X_val', data=X_val)
+        hf.create_dataset('Y_val', data=Y_val)
 # ---------------------------------------------------------------
 
 
